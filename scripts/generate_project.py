@@ -8,21 +8,23 @@ app_swift_files = []
 for root, _, files in os.walk('WaveMix'):
     for f in files:
         if f.endswith('.swift'):
-            rel_path = os.path.relpath(os.path.join(root, f), '.').replace('\\', '/')
-            app_swift_files.append((f, rel_path))
+            # Path relative to WaveMix group folder
+            rel_in_group = os.path.relpath(os.path.join(root, f), 'WaveMix').replace('\\', '/')
+            app_swift_files.append((f, rel_in_group))
 
 test_swift_files = []
 for root, _, files in os.walk('WaveMixTests'):
     for f in files:
         if f.endswith('.swift'):
-            rel_path = os.path.relpath(os.path.join(root, f), '.').replace('\\', '/')
-            test_swift_files.append((f, rel_path))
+            # Path relative to WaveMixTests group folder
+            rel_in_group = os.path.relpath(os.path.join(root, f), 'WaveMixTests').replace('\\', '/')
+            test_swift_files.append((f, rel_in_group))
 
 resource_files = [
-    ('Assets.xcassets', 'WaveMix/Resources/Assets.xcassets'),
-    ('PrivacyInfo.xcprivacy', 'WaveMix/Resources/PrivacyManifest/PrivacyInfo.xcprivacy'),
-    ('Info.plist', 'WaveMix/Resources/Info.plist'),
-    ('WaveMix.entitlements', 'WaveMix/Resources/WaveMix.entitlements')
+    ('Assets.xcassets', 'Resources/Assets.xcassets'),
+    ('PrivacyInfo.xcprivacy', 'Resources/PrivacyManifest/PrivacyInfo.xcprivacy'),
+    ('Info.plist', 'Resources/Info.plist'),
+    ('WaveMix.entitlements', 'Resources/WaveMix.entitlements')
 ]
 
 lines = ['// !$*UTF8*$!', '{', '\tarchiveVersion = 1;', '\tclasses = {', '\t};', '\tobjectVersion = 56;', '\tobjects = {']
@@ -46,10 +48,10 @@ lines.append(f'\t\t{get_id("product_app")} /* WaveMix.app */ = {{isa = PBXFileRe
 lines.append(f'\t\t{get_id("product_tests")} /* WaveMixTests.xctest */ = {{isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = WaveMixTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; }};')
 
 for f, path in app_swift_files:
-    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{os.path.basename(path)}"; sourceTree = "<group>"; }};')
+    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{path}"; sourceTree = "<group>"; }};')
 
 for f, path in test_swift_files:
-    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{os.path.basename(path)}"; sourceTree = "<group>"; }};')
+    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "{path}"; sourceTree = "<group>"; }};')
 
 for f, path in resource_files:
     if f.endswith('.xcassets'):
@@ -58,7 +60,7 @@ for f, path in resource_files:
         file_type = 'text.plist.xml'
     else:
         file_type = 'text'
-    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = {file_type}; path = "{os.path.basename(path)}"; sourceTree = "<group>"; }};')
+    lines.append(f'\t\t{get_id("ref_" + path)} /* {f} */ = {{isa = PBXFileReference; lastKnownFileType = {file_type}; path = "{path}"; sourceTree = "<group>"; }};')
 lines.append('/* End PBXFileReference section */')
 
 # 3. PBXFrameworksBuildPhase
@@ -230,15 +232,17 @@ lines.append(f'''\t\t{get_id("app_debug")} /* Debug */ = {{
 \t\t\tbuildSettings = {{
 \t\t\t\tASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 \t\t\t\tASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-\t\t\t\tCODE_SIGN_ENTITLEMENTS = WaveMix/Resources/WaveMix.entitlements;
+\t\t\t\tCODE_SIGN_ENTITLEMENTS = Resources/WaveMix.entitlements;
 \t\t\t\tCODE_SIGN_STYLE = Automatic;
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+\t\t\t\tENABLE_PREVIEWS = NO;
 \t\t\t\tGENERATE_INFOPLIST_FILE = NO;
-\t\t\t\tINFOPLIST_FILE = WaveMix/Resources/Info.plist;
+\t\t\t\tINFOPLIST_FILE = Resources/Info.plist;
 \t\t\t\tLD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
 \t\t\t\tMARKETING_VERSION = 1.0.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.wavemix.musicplayer;
-\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
+\t\t\t\tPRODUCT_NAME = WaveMix;
+\t\t\t\tPRODUCT_MODULE_NAME = WaveMix;
 \t\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;
 \t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";
 \t\t\t}};
@@ -250,15 +254,17 @@ lines.append(f'''\t\t{get_id("app_release")} /* Release */ = {{
 \t\t\tbuildSettings = {{
 \t\t\t\tASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 \t\t\t\tASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-\t\t\t\tCODE_SIGN_ENTITLEMENTS = WaveMix/Resources/WaveMix.entitlements;
+\t\t\t\tCODE_SIGN_ENTITLEMENTS = Resources/WaveMix.entitlements;
 \t\t\t\tCODE_SIGN_STYLE = Automatic;
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+\t\t\t\tENABLE_PREVIEWS = NO;
 \t\t\t\tGENERATE_INFOPLIST_FILE = NO;
-\t\t\t\tINFOPLIST_FILE = WaveMix/Resources/Info.plist;
+\t\t\t\tINFOPLIST_FILE = Resources/Info.plist;
 \t\t\t\tLD_RUNPATH_SEARCH_PATHS = ("$(inherited)", "@executable_path/Frameworks");
 \t\t\t\tMARKETING_VERSION = 1.0.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.wavemix.musicplayer;
-\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
+\t\t\t\tPRODUCT_NAME = WaveMix;
+\t\t\t\tPRODUCT_MODULE_NAME = WaveMix;
 \t\t\t\tSWIFT_EMIT_LOC_STRINGS = YES;
 \t\t\t\tTARGETED_DEVICE_FAMILY = "1,2";
 \t\t\t}};
@@ -271,11 +277,13 @@ lines.append(f'''\t\t{get_id("tests_debug")} /* Debug */ = {{
 \t\t\tbuildSettings = {{
 \t\t\t\tBUNDLE_LOADER = "$(TEST_HOST)";
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+\t\t\t\tENABLE_PREVIEWS = NO;
 \t\t\t\tGENERATE_INFOPLIST_FILE = YES;
 \t\t\t\tMARKETING_VERSION = 1.0.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.wavemix.musicplayerTests;
-\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
-\t\t\t\tTEST_HOST = "$(BUILT_PRODUCTS_DIR)/WaveMix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WaveMix";
+\t\t\t\tPRODUCT_NAME = WaveMixTests;
+\t\t\t\tPRODUCT_MODULE_NAME = WaveMixTests;
+\t\t\t\tTEST_HOST = "$(BUILT_PRODUCTS_DIR)/WaveMix.app/WaveMix";
 \t\t\t}};
 \t\t\tname = Debug;
 \t\t}};''')
@@ -285,11 +293,13 @@ lines.append(f'''\t\t{get_id("tests_release")} /* Release */ = {{
 \t\t\tbuildSettings = {{
 \t\t\t\tBUNDLE_LOADER = "$(TEST_HOST)";
 \t\t\t\tCURRENT_PROJECT_VERSION = 1;
+\t\t\t\tENABLE_PREVIEWS = NO;
 \t\t\t\tGENERATE_INFOPLIST_FILE = YES;
 \t\t\t\tMARKETING_VERSION = 1.0.0;
 \t\t\t\tPRODUCT_BUNDLE_IDENTIFIER = com.wavemix.musicplayerTests;
-\t\t\t\tPRODUCT_NAME = "$(TARGET_NAME)";
-\t\t\t\tTEST_HOST = "$(BUILT_PRODUCTS_DIR)/WaveMix.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/WaveMix";
+\t\t\t\tPRODUCT_NAME = WaveMixTests;
+\t\t\t\tPRODUCT_MODULE_NAME = WaveMixTests;
+\t\t\t\tTEST_HOST = "$(BUILT_PRODUCTS_DIR)/WaveMix.app/WaveMix";
 \t\t\t}};
 \t\t\tname = Release;
 \t\t}};''')
@@ -338,3 +348,147 @@ with open('WaveMix.xcodeproj/project.pbxproj', 'w', encoding='utf-8') as f:
     f.write(content)
 
 print(f"WaveMix.xcodeproj/project.pbxproj generated successfully ({len(content)} bytes).")
+
+# 12. Create shared schemes
+shared_schemes_dir = 'WaveMix.xcodeproj/xcshareddata/xcschemes'
+os.makedirs(shared_schemes_dir, exist_ok=True)
+
+app_target_id = get_id("target_app")
+tests_target_id = get_id("target_tests")
+
+scheme_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1520"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "YES"
+            buildForArchiving = "YES"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{app_target_id}"
+               BuildableName = "WaveMix.app"
+               BlueprintName = "WaveMix"
+               ReferencedContainer = "container:WaveMix.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "NO"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{tests_target_id}"
+               BuildableName = "WaveMixTests.xctest"
+               BlueprintName = "WaveMixTests"
+               ReferencedContainer = "container:WaveMix.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{tests_target_id}"
+               BuildableName = "WaveMixTests.xctest"
+               BlueprintName = "WaveMixTests"
+               ReferencedContainer = "container:WaveMix.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      launchStyle = "0"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      debugDocumentVersioning = "YES"
+      debugServiceExtension = "internal"
+      allowLocationSimulation = "YES">
+      <BuildableProductRunnable
+         runnableDebuggingMode = "0">
+         <BuildableReference
+            BuildableIdentifier = "primary"
+            BlueprintIdentifier = "{app_target_id}"
+            BuildableName = "WaveMix.app"
+            BlueprintName = "WaveMix"
+            ReferencedContainer = "container:WaveMix.xcodeproj">
+         </BuildableReference>
+      </BuildableProductRunnable>
+   </LaunchAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>
+'''
+
+with open(os.path.join(shared_schemes_dir, 'WaveMix.xcscheme'), 'w', encoding='utf-8') as f:
+    f.write(scheme_content)
+
+tests_scheme_content = f'''<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   LastUpgradeVersion = "1520"
+   version = "1.7">
+   <BuildAction
+      parallelizeBuildables = "YES"
+      buildImplicitDependencies = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForTesting = "YES"
+            buildForRunning = "YES"
+            buildForProfiling = "NO"
+            buildForArchiving = "NO"
+            buildForAnalyzing = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{tests_target_id}"
+               BuildableName = "WaveMixTests.xctest"
+               BlueprintName = "WaveMixTests"
+               ReferencedContainer = "container:WaveMix.xcodeproj">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      buildConfiguration = "Debug"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+      <Testables>
+         <TestableReference
+            skipped = "NO">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintIdentifier = "{tests_target_id}"
+               BuildableName = "WaveMixTests.xctest"
+               BlueprintName = "WaveMixTests"
+               ReferencedContainer = "container:WaveMix.xcodeproj">
+            </BuildableReference>
+         </TestableReference>
+      </Testables>
+   </TestAction>
+</Scheme>
+'''
+
+with open(os.path.join(shared_schemes_dir, 'WaveMixTests.xcscheme'), 'w', encoding='utf-8') as f:
+    f.write(tests_scheme_content)
+
+print(f"Generated shared schemes: WaveMix.xcscheme, WaveMixTests.xcscheme")
