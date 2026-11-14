@@ -35,26 +35,10 @@ public final class SmartSourceSwitchUseCase: Sendable {
     public func cleanMetadata(from youtubeTitle: String, channelTitle: String?) -> (artist: String, title: String) {
         var cleaned = youtubeTitle
         
-        // Remove common YouTube fluff in parentheses or brackets
+        // Remove common YouTube fluff in parentheses, brackets, or after pipes
         let fluffPatterns = [
-            "\\(Official\\s*(Music\\s*)?Video\\)",
-            "\\[Official\\s*(Music\\s*)?Video\\]",
-            "\\(Official\\s*Audio\\)",
-            "\\[Official\\s*Audio\\]",
-            "\\(Lyric\\s*Video\\)",
-            "\\[Lyric\\s*Video\\]",
-            "\\(Lyrics\\)",
-            "\\[Lyrics\\]",
-            "\\(Audio\\)",
-            "\\[Audio\\]",
-            "\\(MV\\)",
-            "\\[MV\\]",
-            "\\(Visualizer\\)",
-            "\\[Visualizer\\]",
-            "\\(4K\\)",
-            "\\[4K\\]",
-            "\\(HD\\)",
-            "\\[HD\\]",
+            "\\[[^\\]]*(?:official|video|audio|lyric|visualizer|4k|hd|mv)[^\\]]*\\]",
+            "\\([^)]*(?:official|video|audio|lyric|visualizer|4k|hd|mv)[^)]*\\)",
             "\\|.*$"
         ]
 
