@@ -1,0 +1,25 @@
+default_platform(:ios)
+
+platform :ios do
+  desc "Run Unit & Compliance Tests"
+  lane :test do
+    scan(
+      project: "WaveMix.xcodeproj",
+      scheme: "WaveMixTests",
+      devices: ["iPhone 15"]
+    )
+  end
+
+  desc "Build & Export Release IPA"
+  lane :build_release do
+    gym(
+      project: "WaveMix.xcodeproj",
+      scheme: "WaveMix",
+      configuration: "Release",
+      output_directory: "./build/IPA",
+      output_name: "WaveMix.ipa",
+      clean: true,
+      export_method: "development"
+    )
+  end
+end

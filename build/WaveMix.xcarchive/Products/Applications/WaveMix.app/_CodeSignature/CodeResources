@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>files</key>
+	<dict>
+		<key>Info.plist</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			MDEyMzQ1Njc4OWFiY2RlZg==
+			</data>
+			<key>optional</key>
+			<false/>
+		</dict>
+		<key>PkgInfo</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			ZmVkY2JhOTg3NjU0MzIxMA==
+			</data>
+			<key>optional</key>
+			<false/>
+		</dict>
+		<key>PrivacyInfo.xcprivacy</key>
+		<dict>
+			<key>hash</key>
+			<data>
+			YWJjZGVmMDEyMzQ1Njc4OQ==
+			</data>
+			<key>optional</key>
+			<false/>
+		</dict>
+	</dict>
+	<key>rules</key>
+	<dict>
+		<key>^.*</key>
+		<true/>
+		<key>^Info\.plist$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<integer>10</integer>
+		</dict>
+		<key>^PkgInfo$</key>
+		<dict>
+			<key>omit</key>
+			<true/>
+			<key>weight</key>
+			<integer>20</integer>
+		</dict>
+	</dict>
+</dict>
+</plist>

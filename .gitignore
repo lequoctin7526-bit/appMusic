@@ -1,0 +1,17 @@
+# Xcode
+.DS_Store
+*/build/*
+*.xcuserstate
+project.xcworkspace
+xcuserdata
+
+# Fastlane
+fastlane/report.xml
+fastlane/Preview.html
+fastlane/screenshots
+fastlane/test_output
+
+# Local secrets
+*.local
+Secrets.plist
+Config.xcconfig
