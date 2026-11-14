@@ -29,7 +29,7 @@ public final class UnifiedPlaybackService: ObservableObject, AudioSessionService
     private var isAppInBackground: Bool = false
 
     public init(
-        youtubeController: YouTubePlayerController = YouTubePlayerController(),
+        youtubeController: YouTubePlayerController? = nil,
         appleMusicService: AppleMusicService = AppleMusicService(),
         licensedCatalogService: LicensedCatalogService = LicensedCatalogService(),
         audioSessionService: AudioSessionService = AudioSessionService(),
@@ -37,7 +37,7 @@ public final class UnifiedPlaybackService: ObservableObject, AudioSessionService
         mediaRemoteService: MediaRemoteService = MediaRemoteService(),
         storageService: StorageService = StorageService()
     ) {
-        self.youtubeController = youtubeController
+        self.youtubeController = youtubeController ?? YouTubePlayerController()
         self.appleMusicService = appleMusicService
         self.licensedCatalogService = licensedCatalogService
         self.audioSessionService = audioSessionService
