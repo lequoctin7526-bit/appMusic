@@ -2,6 +2,7 @@ import Foundation
 import MediaPlayer
 
 /// Delegate for handling hardware and lock screen remote media controls
+@MainActor
 public protocol MediaRemoteServiceDelegate: AnyObject {
     func remotePlay()
     func remotePause()
@@ -23,31 +24,41 @@ public final class MediaRemoteService: @unchecked Sendable {
     private func setupRemoteCommands() {
         commandCenter.playCommand.isEnabled = true
         commandCenter.playCommand.addTarget { [weak self] _ in
-            self?.delegate?.remotePlay()
+            Task { @MainActor [weak self] in
+                self?.delegate?.remotePlay()
+            }
             return .success
         }
 
         commandCenter.pauseCommand.isEnabled = true
         commandCenter.pauseCommand.addTarget { [weak self] _ in
-            self?.delegate?.remotePause()
+            Task { @MainActor [weak self] in
+                self?.delegate?.remotePause()
+            }
             return .success
         }
 
-        commandCenter.togglePlayPauseMusicCommand.isEnabled = true
-        commandCenter.togglePlayPauseMusicCommand.addTarget { [weak self] _ in
-            self?.delegate?.remotePlay()
+        commandCenter.togglePlayPauseCommand.isEnabled = true
+        commandCenter.togglePlayPauseCommand.addTarget { [weak self] _ in
+            Task { @MainActor [weak self] in
+                self?.delegate?.remotePlay()
+            }
             return .success
         }
 
         commandCenter.nextTrackCommand.isEnabled = true
         commandCenter.nextTrackCommand.addTarget { [weak self] _ in
-            self?.delegate?.remoteNext()
+            Task { @MainActor [weak self] in
+                self?.delegate?.remoteNext()
+            }
             return .success
         }
 
         commandCenter.previousTrackCommand.isEnabled = true
         commandCenter.previousTrackCommand.addTarget { [weak self] _ in
-            self?.delegate?.remotePrevious()
+            Task { @MainActor [weak self] in
+                self?.delegate?.remotePrevious()
+            }
             return .success
         }
 

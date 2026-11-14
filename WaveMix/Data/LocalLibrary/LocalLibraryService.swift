@@ -19,7 +19,7 @@ public final class LocalLibraryService: MusicSearchProvider, @unchecked Sendable
         }
 
         let tracks: [MusicTrack] = matched.prefix(filter.limit).map { item in
-            var artworkURL: URL? = nil
+            let artworkURL: URL? = nil
             if let artwork = item.artwork {
                 _ = artwork.image(at: CGSize(width: 300, height: 300))
             }

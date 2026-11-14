@@ -2,6 +2,7 @@ import Foundation
 import AVFoundation
 
 /// Delegate protocol for audio interruptions and route changes
+@MainActor
 public protocol AudioSessionServiceDelegate: AnyObject {
     func audioSessionDidReceiveInterruption(shouldResume: Bool)
     func audioSessionDidReceiveRouteChange(reason: AVAudioSession.RouteChangeReason)
@@ -68,14 +69,20 @@ public final class AudioSessionService: @unchecked Sendable {
 
         switch type {
         case .began:
-            delegate?.audioSessionDidReceiveInterruption(shouldResume: false)
+            Task { @MainActor in
+                self.delegate?.audioSessionDidReceiveInterruption(shouldResume: false)
+            }
         case .ended:
             if let optionsValue = userInfo[AVAudioSessionInterruptionOptionKey] as? UInt {
                 let options = AVAudioSession.InterruptionOptions(rawValue: optionsValue)
                 let shouldResume = options.contains(.shouldResume)
-                delegate?.audioSessionDidReceiveInterruption(shouldResume: shouldResume)
+                Task { @MainActor in
+                    self.delegate?.audioSessionDidReceiveInterruption(shouldResume: shouldResume)
+                }
             } else {
-                delegate?.audioSessionDidReceiveInterruption(shouldResume: false)
+                Task { @MainActor in
+                    self.delegate?.audioSessionDidReceiveInterruption(shouldResume: false)
+                }
             }
         @unknown default:
             break
@@ -89,7 +96,9 @@ public final class AudioSessionService: @unchecked Sendable {
 
         // Pause playback if headphones/AirPods disconnected
         if reason == .oldDeviceUnavailable {
-            delegate?.audioSessionDidReceiveRouteChange(reason: reason)
+            Task { @MainActor in
+                self.delegate?.audioSessionDidReceiveRouteChange(reason: reason)
+            }
         }
     }
 }

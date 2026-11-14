@@ -96,8 +96,7 @@ public enum ISO8601DurationParser {
         _ = scanner.scanString("PT")
         
         while !scanner.isAtEnd {
-            var value: Double = 0
-            if scanner.scanDouble(&value) {
+            if let value = scanner.scanDouble() {
                 if scanner.scanString("H") != nil {
                     totalSeconds += value * 3600
                 } else if scanner.scanString("M") != nil {

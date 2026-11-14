@@ -53,7 +53,7 @@ public final class UnifiedPlaybackService: ObservableObject, AudioSessionService
     }
 
     deinit {
-        removeTimeObserver()
+        // Player time observers are automatically invalidated when avPlayer is released
     }
 
     public var currentTrack: MusicTrack? {
@@ -168,7 +168,7 @@ public final class UnifiedPlaybackService: ObservableObject, AudioSessionService
     }
 
     public func togglePlayPause() {
-        guard let track = currentTrack else { return }
+        guard currentTrack != nil else { return }
 
         if isPlaying {
             pause()
@@ -299,10 +299,12 @@ public final class UnifiedPlaybackService: ObservableObject, AudioSessionService
         removeTimeObserver()
         let interval = CMTime(seconds: 0.5, preferredTimescale: 600)
         timeObserverToken = player.addPeriodicTimeObserver(forInterval: interval, queue: .main) { [weak self] time in
-            guard let self = self else { return }
-            self.currentTime = time.seconds
-            if let currentItem = player.currentItem, currentItem.duration.isNumeric {
-                self.duration = currentItem.duration.seconds
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.currentTime = time.seconds
+                if let currentItem = player.currentItem, currentItem.duration.isNumeric {
+                    self.duration = currentItem.duration.seconds
+                }
             }
         }
     }
