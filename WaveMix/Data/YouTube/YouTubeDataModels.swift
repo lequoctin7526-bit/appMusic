@@ -86,6 +86,22 @@ public struct YouTubeVideoStatus: Decodable, Sendable {
     public let publicStatsViewable: Bool?
 }
 
+// MARK: - Channel Details Response
+
+public struct YouTubeChannelListResponse: Decodable, Sendable {
+    public let items: [YouTubeChannelItem]
+}
+
+public struct YouTubeChannelItem: Decodable, Sendable {
+    public let id: String
+    public let snippet: YouTubeChannelSnippet?
+}
+
+public struct YouTubeChannelSnippet: Decodable, Sendable {
+    public let title: String
+    public let country: String? // e.g. "VN"
+}
+
 // MARK: - ISO 8601 Duration Parser
 
 public enum ISO8601DurationParser {

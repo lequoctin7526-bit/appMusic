@@ -11,6 +11,10 @@ fastlane/Preview.html
 fastlane/screenshots
 fastlane/test_output
 
+# Python
+__pycache__/
+*.py[cod]
+
 # Local secrets
 *.local
 Secrets.plist

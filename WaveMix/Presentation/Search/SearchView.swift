@@ -1,12 +1,13 @@
 import SwiftUI
 import Combine
 
-/// Multi-source search screen with debounce, provider filtering, history, and separate attributions
+/// Vietnam-prioritized Multi-source search screen with debounce, category filters, and history
 public struct SearchView: View {
     @EnvironmentObject private var playbackService: UnifiedPlaybackService
 
     @State private var searchText: String = ""
     @State private var selectedProviderFilter: MusicProvider? = nil
+    @State private var selectedVietnamCategory: VietnamMusicCategory? = nil
     @State private var searchResults: [MusicTrack] = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
@@ -14,45 +15,38 @@ public struct SearchView: View {
 
     private let storageService = StorageService()
     private let searchUseCase: SearchMusicUseCase
+    private let youtubeService: YouTubeAPIService
 
     public init() {
-        let youtube = YouTubeAPIService()
-        let apple = AppleMusicService()
-        let licensed = LicensedCatalogService()
-        let local = LocalLibraryService()
-
-        self.searchUseCase = SearchMusicUseCase(providers: [
-            .youtube: youtube,
-            .appleMusic: apple,
-            .licensedCatalog: licensed,
-            .localLibrary: local
-        ])
+        let container = AppDependencyContainer.shared
+        self.youtubeService = container.youtubeAPIService
+        self.searchUseCase = container.searchMusicUseCase
     }
 
     public var body: some View {
         NavigationView {
             ZStack {
-                WaveMixColors.backgroundDark.ignoresSafeArea()
+                WaveMixColors.midnightBlack.ignoresSafeArea()
 
                 VStack(spacing: 12) {
                     // Search Bar
                     searchBarView
 
-                    // Provider Filter Pills
-                    filterPillsView
+                    // Vietnam Music Category Filter Pills
+                    vietnamCategoryPillsView
 
                     // Content Area
                     if isLoading {
                         Spacer()
                         ProgressView()
-                            .tint(WaveMixColors.accentCyan)
-                        Text("Searching all music sources...")
+                            .tint(WaveMixColors.neonCyan)
+                        Text("Đang tìm kiếm trên các nguồn âm nhạc...")
                             .font(.system(size: 13))
                             .foregroundColor(WaveMixColors.textSecondary)
                         Spacer()
                     } else if let error = errorMessage {
                         errorStateView(error)
-                    } else if searchText.isEmpty {
+                    } else if searchText.isEmpty && selectedVietnamCategory == nil {
                         historySection
                     } else if searchResults.isEmpty {
                         emptyStateView
@@ -62,7 +56,7 @@ public struct SearchView: View {
                 }
                 .padding(.bottom, 80) // Miniplayer offset
             }
-            .navigationTitle("Search")
+            .navigationTitle("Tìm kiếm")
             .navigationBarTitleDisplayMode(.inline)
         }
         .onAppear {
@@ -77,7 +71,7 @@ public struct SearchView: View {
             Image(systemName: "magnifyingglass")
                 .foregroundColor(WaveMixColors.textTertiary)
 
-            TextField("Search songs, artists, videos...", text: $searchText)
+            TextField("Tìm bài hát, nghệ sĩ, MV Việt Nam...", text: $searchText)
                 .foregroundColor(WaveMixColors.textPrimary)
                 .font(.system(size: 15))
                 .submitLabel(.search)
@@ -103,25 +97,29 @@ public struct SearchView: View {
         .padding(.top, 8)
     }
 
-    private var filterPillsView: some View {
+    private var vietnamCategoryPillsView: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
-                // "All" filter pill
-                filterPill(title: "All Sources", isSelected: selectedProviderFilter == nil) {
-                    selectedProviderFilter = nil
+                // "Tất cả"
+                filterPill(
+                    title: "Tất cả",
+                    isSelected: selectedVietnamCategory == nil,
+                    icon: "sparkles"
+                ) {
+                    selectedVietnamCategory = nil
                     if !searchText.isEmpty { performSearch() }
                 }
 
-                // Individual provider pills
-                ForEach(MusicProvider.allCases) { provider in
+                // Vietnam Music Categories (Section 12)
+                ForEach(VietnamMusicCategory.allCases) { cat in
                     filterPill(
-                        title: provider.displayName,
-                        isSelected: selectedProviderFilter == provider,
-                        icon: provider.systemIcon,
-                        color: provider.brandColor
+                        title: cat.displayName,
+                        isSelected: selectedVietnamCategory == cat,
+                        icon: cat.systemIcon
                     ) {
-                        selectedProviderFilter = provider
-                        if !searchText.isEmpty { performSearch() }
+                        selectedVietnamCategory = cat
+                        searchText = cat.displayName
+                        performCategorySearch(category: cat)
                     }
                 }
             }
@@ -134,7 +132,6 @@ public struct SearchView: View {
         title: String,
         isSelected: Bool,
         icon: String? = nil,
-        color: Color = WaveMixColors.accentCyan,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: action) {
@@ -149,7 +146,11 @@ public struct SearchView: View {
             .foregroundColor(isSelected ? .white : WaveMixColors.textSecondary)
             .padding(.horizontal, 12)
             .padding(.vertical, 6)
-            .background(isSelected ? WaveMixColors.brandGradient : LinearGradient(colors: [WaveMixColors.surfaceElevated], startPoint: .top, endPoint: .bottom))
+            .background(
+                isSelected ?
+                    WaveMixColors.brandGradient :
+                    LinearGradient(colors: [WaveMixColors.surfaceElevated], startPoint: .top, endPoint: .bottom)
+            )
             .cornerRadius(20)
             .overlay(
                 RoundedRectangle(cornerRadius: 20)
@@ -163,18 +164,18 @@ public struct SearchView: View {
         VStack(alignment: .leading, spacing: 14) {
             if !searchHistory.isEmpty {
                 HStack {
-                    Text("Recent Searches")
+                    Text("Tìm kiếm gần đây")
                         .font(.system(size: 15, weight: .bold))
                         .foregroundColor(WaveMixColors.textPrimary)
 
                     Spacer()
 
-                    Button("Clear") {
+                    Button("Xóa") {
                         storageService.clearSearchHistory()
                         searchHistory = []
                     }
                     .font(.system(size: 13, weight: .medium))
-                    .foregroundColor(WaveMixColors.accentViolet)
+                    .foregroundColor(WaveMixColors.accentPink)
                 }
                 .padding(.horizontal, 16)
                 .padding(.top, 12)
@@ -197,6 +198,45 @@ public struct SearchView: View {
                                 .padding(.vertical, 6)
                                 .background(WaveMixColors.surfaceElevated)
                                 .cornerRadius(16)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                    .padding(.horizontal, 16)
+                }
+            }
+
+            // Quick trending suggestions
+            VStack(alignment: .leading, spacing: 10) {
+                Text("Gợi ý xu hướng Việt Nam")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(WaveMixColors.textPrimary)
+                    .padding(.horizontal, 16)
+                    .padding(.top, 8)
+
+                let trendingSuggestions = ["Sơn Tùng M-TP", "Đen Vâu", "HIEUTHUHAI", "Vũ.", "Tăng Duy Tân", "Hoàng Thùy Linh"]
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(trendingSuggestions, id: \.self) { artist in
+                            Button(action: {
+                                searchText = artist
+                                performSearch()
+                            }) {
+                                HStack(spacing: 4) {
+                                    Image(systemName: "arrow.up.right")
+                                        .font(.system(size: 10))
+                                    Text(artist)
+                                        .font(.system(size: 13, weight: .medium))
+                                }
+                                .foregroundColor(WaveMixColors.neonCyan)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(WaveMixColors.surfaceDark)
+                                .cornerRadius(16)
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(WaveMixColors.neonCyan.opacity(0.3), lineWidth: 1)
+                                )
                             }
                             .buttonStyle(.plain)
                         }
@@ -235,10 +275,10 @@ public struct SearchView: View {
             Image(systemName: "magnifyingglass.circle")
                 .font(.system(size: 48))
                 .foregroundColor(WaveMixColors.textTertiary)
-            Text("No results found for \"\(searchText)\"")
+            Text("Không tìm thấy kết quả cho \"\(searchText)\"")
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(WaveMixColors.textSecondary)
-            Text("Try searching by track name, artist, or changing the source filter.")
+            Text("Hãy thử tìm kiếm với tên bài hát, nghệ sĩ hoặc thể loại khác.")
                 .font(.system(size: 12))
                 .foregroundColor(WaveMixColors.textTertiary)
                 .multilineTextAlignment(.center)
@@ -253,7 +293,7 @@ public struct SearchView: View {
             Image(systemName: "exclamationmark.triangle.fill")
                 .font(.system(size: 40))
                 .foregroundColor(Color.orange)
-            Text("Search Error")
+            Text("Lỗi tìm kiếm")
                 .font(.system(size: 16, weight: .bold))
                 .foregroundColor(WaveMixColors.textPrimary)
             Text(message)
@@ -261,10 +301,10 @@ public struct SearchView: View {
                 .foregroundColor(WaveMixColors.textSecondary)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal, 32)
-            Button("Retry Search") {
+            Button("Thử lại") {
                 performSearch()
             }
-            .foregroundColor(WaveMixColors.accentCyan)
+            .foregroundColor(WaveMixColors.neonCyan)
             .padding(.top, 4)
             Spacer()
         }
@@ -282,7 +322,7 @@ public struct SearchView: View {
         isLoading = true
         errorMessage = nil
 
-        let filter = SearchFilter(provider: selectedProviderFilter, category: .all, limit: 20)
+        let filter = SearchFilter(provider: selectedProviderFilter, category: .all, limit: 25)
 
         Task {
             do {
@@ -293,6 +333,26 @@ public struct SearchView: View {
                 }
                 await MainActor.run {
                     self.searchResults = combined
+                    self.isLoading = false
+                }
+            } catch {
+                await MainActor.run {
+                    self.errorMessage = error.localizedDescription
+                    self.isLoading = false
+                }
+            }
+        }
+    }
+
+    private func performCategorySearch(category: VietnamMusicCategory) {
+        isLoading = true
+        errorMessage = nil
+
+        Task {
+            do {
+                let tracks = try await youtubeService.fetchCategoryTracks(category: category, limit: 25)
+                await MainActor.run {
+                    self.searchResults = tracks
                     self.isLoading = false
                 }
             } catch {

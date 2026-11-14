@@ -31,6 +31,7 @@ public struct MusicTrack: Identifiable, Hashable, Codable, Sendable {
     public let publishedAt: Date?
     public let copyrightAttribution: String?
     public let streamURL: URL?
+    public let isVietnameseChannel: Bool
 
     public init(
         id: UUID = UUID(),
@@ -49,7 +50,8 @@ public struct MusicTrack: Identifiable, Hashable, Codable, Sendable {
         channelTitle: String? = nil,
         publishedAt: Date? = nil,
         copyrightAttribution: String? = nil,
-        streamURL: URL? = nil
+        streamURL: URL? = nil,
+        isVietnameseChannel: Bool = false
     ) {
         self.id = id
         self.provider = provider
@@ -63,6 +65,7 @@ public struct MusicTrack: Identifiable, Hashable, Codable, Sendable {
         self.appleMusicID = appleMusicID ?? (provider == .appleMusic ? providerTrackID : nil)
         self.isExplicit = isExplicit
         self.availability = availability
+        self.isVietnameseChannel = isVietnameseChannel
         
         // Strict enforcement: YouTube NEVER supports background playback
         if provider == .youtube {

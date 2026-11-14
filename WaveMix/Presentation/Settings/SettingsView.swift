@@ -1,17 +1,27 @@
 import SwiftUI
 import MusicKit
 
-/// Comprehensive application settings, account authorizations, and compliance disclosures
+/// Comprehensive application settings, regional configurations, and compliance disclosures
 public struct SettingsView: View {
+    // Appearance
     @AppStorage("wavemix_theme") private var isDarkMode: Bool = true
-    @AppStorage("default_search_provider") private var defaultSearchProvider: String = MusicProvider.youtube.rawValue
-    @AppStorage("preferred_playback_provider") private var preferredPlaybackProvider: String = MusicProvider.appleMusic.rawValue
-    @AppStorage("cross_source_search") private var crossSourceSearch: Bool = true
+    @AppStorage("animation_effects_enabled") private var animationEffectsEnabled: Bool = true
+
+    // Region & Language (Section 5 & 13)
+    @AppStorage("user_region_code") private var userRegionCode: String = "VN"
+    @AppStorage("user_language_code") private var userLanguageCode: String = "vi"
+
+    // Music Discovery
+    @AppStorage("preferred_playback_provider") private var preferredPlaybackProvider: String = MusicProvider.youtube.rawValue
+    @AppStorage("prioritize_vietnam_music") private var prioritizeVietnamMusic: Bool = true
     @AppStorage("audio_quality") private var audioQuality: String = "High (320 kbps)"
 
-    @State private var musicKitStatusText: String = "Checking..."
+    @State private var musicKitStatusText: String = "Đang kiểm tra..."
     @State private var canRequestMusicKit: Bool = false
     @State private var showClearHistoryAlert: Bool = false
+    @State private var showOnboardingModal: Bool = false
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     private let appleMusicService = AppleMusicService()
     private let storageService = StorageService()
@@ -21,33 +31,92 @@ public struct SettingsView: View {
     public var body: some View {
         NavigationView {
             ZStack {
-                WaveMixColors.backgroundDark.ignoresSafeArea()
+                WaveMixColors.midnightBlack.ignoresSafeArea()
 
                 Form {
-                    // Preferences Section
-                    Section(header: Text("General Preferences").foregroundColor(WaveMixColors.textTertiary)) {
-                        Toggle("Dark Mode", isOn: $isDarkMode)
-                        Toggle("Cross-Source Search", isOn: $crossSourceSearch)
+                    // 1. APPEARANCE
+                    Section(header: Text("Giao diện (Appearance)").foregroundColor(WaveMixColors.textTertiary)) {
+                        Toggle("Chế độ tối (Dark Mode)", isOn: $isDarkMode)
+                        Toggle("Hiệu ứng chuyển động (Animations)", isOn: $animationEffectsEnabled)
 
-                        Picker("Preferred Provider", selection: $preferredPlaybackProvider) {
+                        HStack {
+                            Text("Giảm chuyển động hệ thống (Reduce Motion)")
+                                .font(.system(size: 13))
+                            Spacer()
+                            Text(reduceMotion ? "Bật" : "Tắt")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(reduceMotion ? Color.orange : Color.green)
+                        }
+                    }
+                    .listRowBackground(WaveMixColors.surfaceDark)
+
+                    // 2. REGION & LANGUAGE (Section 5 & 13)
+                    Section(header: Text("Khu vực & Ngôn ngữ").foregroundColor(WaveMixColors.textTertiary)) {
+                        Picker("Quốc gia / Khu vực", selection: $userRegionCode) {
+                            Text("Việt Nam (VN) 🇻🇳").tag("VN")
+                            Text("Hoa Kỳ (US) 🇺🇸").tag("US")
+                            Text("Toàn cầu (Global) 🌐").tag("GLOBAL")
+                        }
+
+                        Picker("Ngôn ngữ ứng dụng", selection: $userLanguageCode) {
+                            Text("Tiếng Việt").tag("vi")
+                            Text("English").tag("en")
+                        }
+
+                        HStack {
+                            Text("Múi giờ mặc định")
+                            Spacer()
+                            Text("Asia/Ho_Chi_Minh (GMT+7)")
+                                .font(.system(size: 12))
+                                .foregroundColor(WaveMixColors.textSecondary)
+                        }
+
+                        HStack {
+                            Text("Định dạng ngày")
+                            Spacer()
+                            Text("dd/MM/yyyy")
+                                .font(.system(size: 12))
+                                .foregroundColor(WaveMixColors.textSecondary)
+                        }
+                    }
+                    .listRowBackground(WaveMixColors.surfaceDark)
+
+                    // 3. MUSIC DISCOVERY & VIETNAM
+                    Section(header: Text("Khám phá âm nhạc (Music Discovery)").foregroundColor(WaveMixColors.textTertiary)) {
+                        Toggle("Ưu tiên nội dung & nghệ sĩ Việt Nam", isOn: $prioritizeVietnamMusic)
+
+                        Picker("Nguồn phát ưa thích", selection: $preferredPlaybackProvider) {
                             ForEach(MusicProvider.allCases) { p in
                                 Text(p.displayName).tag(p.rawValue)
                             }
                         }
 
-                        Picker("Audio Streaming Quality", selection: $audioQuality) {
-                            Text("Standard (128 kbps)").tag("Standard (128 kbps)")
-                            Text("High (256/320 kbps)").tag("High (320 kbps)")
-                            Text("Lossless (when available)").tag("Lossless")
+                        Picker("Chất lượng stream audio", selection: $audioQuality) {
+                            Text("Tiêu chuẩn (128 kbps)").tag("Standard (128 kbps)")
+                            Text("Chất lượng cao (320 kbps)").tag("High (320 kbps)")
+                            Text("Lossless (Khi có bản quyền)").tag("Lossless")
                         }
                     }
                     .listRowBackground(WaveMixColors.surfaceDark)
 
-                    // MusicKit Integration Section
-                    Section(header: Text("Apple Music Integration").foregroundColor(WaveMixColors.textTertiary)) {
+                    // 4. ONBOARDING & INTRO
+                    Section(header: Text("Hướng dẫn & Giới thiệu").foregroundColor(WaveMixColors.textTertiary)) {
+                        Button(action: { showOnboardingModal = true }) {
+                            HStack {
+                                Image(systemName: "sparkles.tv")
+                                    .foregroundColor(WaveMixColors.neonCyan)
+                                Text("Xem lại màn hình giới thiệu (Intro Onboarding)")
+                                    .foregroundColor(WaveMixColors.textPrimary)
+                            }
+                        }
+                    }
+                    .listRowBackground(WaveMixColors.surfaceDark)
+
+                    // 5. MUSICKIT INTEGRATION
+                    Section(header: Text("Tích hợp Apple Music (MusicKit)").foregroundColor(WaveMixColors.textTertiary)) {
                         HStack {
                             VStack(alignment: .leading, spacing: 4) {
-                                Text("MusicKit Status")
+                                Text("Trạng thái MusicKit")
                                     .font(.system(size: 14, weight: .semibold))
                                 Text(musicKitStatusText)
                                     .font(.system(size: 12))
@@ -57,23 +126,23 @@ public struct SettingsView: View {
                             Spacer()
 
                             if canRequestMusicKit {
-                                Button("Authorize") {
+                                Button("Ủy quyền") {
                                     Task {
                                         let status = await appleMusicService.requestAuthorization()
                                         updateMusicKitStatus(status: status)
                                     }
                                 }
                                 .font(.system(size: 12, weight: .bold))
-                                .foregroundColor(WaveMixColors.accentCyan)
+                                .foregroundColor(WaveMixColors.neonCyan)
                             }
                         }
                     }
                     .listRowBackground(WaveMixColors.surfaceDark)
 
-                    // Background Audio Capability Matrix
-                    Section(header: Text("Background Audio Policy Matrix").foregroundColor(WaveMixColors.textTertiary)) {
+                    // 6. BACKGROUND AUDIO CAPABILITY MATRIX
+                    Section(header: Text("Chính sách phát nhạc nền").foregroundColor(WaveMixColors.textTertiary)) {
                         VStack(alignment: .leading, spacing: 10) {
-                            Text("WaveMix complies with Apple App Review Guidelines and YouTube Developer Terms. Background audio is only enabled for legally licensed sources.")
+                            Text("WaveMix tuân thủ tuyệt đối quy định của Apple App Review và YouTube Developer Terms §II.F:")
                                 .font(.system(size: 12))
                                 .foregroundColor(WaveMixColors.textSecondary)
 
@@ -81,64 +150,72 @@ public struct SettingsView: View {
 
                             capabilityRow(
                                 provider: .youtube,
-                                status: "Foreground Only",
+                                status: "Mở màn hình (Foreground)",
                                 isSupported: false,
-                                note: "YouTube Developer Terms §II.F requires visual player display."
+                                note: "YouTube Developer Terms yêu cầu bắt buộc hiển thị player hình ảnh."
                             )
 
                             capabilityRow(
                                 provider: .appleMusic,
-                                status: "Background Allowed",
+                                status: "Phát nền (Background)",
                                 isSupported: true,
-                                note: "Supported via MusicKit official ApplicationMusicPlayer."
+                                note: "Hỗ trợ chính thức qua Apple MusicKit Player."
                             )
 
                             capabilityRow(
                                 provider: .licensedCatalog,
-                                status: "Background Allowed",
+                                status: "Phát nền (Background)",
                                 isSupported: true,
-                                note: "Direct contracted streaming rights via AVPlayer."
+                                note: "Stream trực tiếp qua AVPlayer có hợp đồng cấp phép."
                             )
 
                             capabilityRow(
                                 provider: .localLibrary,
-                                status: "Background Allowed",
+                                status: "Phát nền (Background)",
                                 isSupported: true,
-                                note: "Device local audio files."
+                                note: "Tệp âm thanh cục bộ trên thiết bị."
                             )
                         }
                         .padding(.vertical, 6)
                     }
                     .listRowBackground(WaveMixColors.surfaceDark)
 
-                    // Privacy & History Section
-                    Section(header: Text("Privacy & Storage").foregroundColor(WaveMixColors.textTertiary)) {
+                    // 7. PRIVACY & HISTORY
+                    Section(header: Text("Quyền riêng tư & Lưu trữ").foregroundColor(WaveMixColors.textTertiary)) {
                         Button(action: { showClearHistoryAlert = true }) {
-                            Text("Clear Search & Playback History")
+                            Text("Xóa lịch sử tìm kiếm & phát nhạc")
                                 .foregroundColor(Color.red)
                         }
 
-                        NavigationLink("Privacy Manifest Details") {
+                        NavigationLink("Chi tiết Privacy Manifest") {
                             privacyManifestView
                         }
                     }
                     .listRowBackground(WaveMixColors.surfaceDark)
 
-                    // App Information
-                    Section(header: Text("About WaveMix").foregroundColor(WaveMixColors.textTertiary)) {
+                    // 8. ABOUT
+                    Section(header: Text("Về WaveMix").foregroundColor(WaveMixColors.textTertiary)) {
                         HStack {
-                            Text("Version")
+                            Text("Tác giả")
                             Spacer()
-                            Text("1.0.0 (Release)")
+                            Text("Quốc Tín")
+                                .font(.system(size: 13, weight: .bold))
+                                .foregroundColor(WaveMixColors.neonCyan)
+                        }
+
+                        HStack {
+                            Text("Phiên bản")
+                            Spacer()
+                            Text("1.1.0 (Vietnam Edition)")
                                 .foregroundColor(WaveMixColors.textSecondary)
                         }
 
                         HStack {
-                            Text("Architecture")
+                            Text("Khẩu hiệu (Tagline)")
                             Spacer()
-                            Text("Clean Architecture • MVVM • Swift Concurrency")
-                                .foregroundColor(WaveMixColors.textSecondary)
+                            Text(WaveMixColors.brandTagline)
                                 .font(.system(size: 11))
+                                .foregroundColor(WaveMixColors.accentPink)
                         }
                     }
                     .listRowBackground(WaveMixColors.surfaceDark)
@@ -146,15 +223,20 @@ public struct SettingsView: View {
                 .scrollContentBackground(.hidden)
                 .padding(.bottom, 80)
             }
-            .navigationTitle("Settings")
+            .navigationTitle("Cài đặt")
             .navigationBarTitleDisplayMode(.inline)
-            .alert("Clear History", isPresented: $showClearHistoryAlert) {
-                Button("Cancel", role: .cancel) {}
-                Button("Clear All", role: .destructive) {
+            .sheet(isPresented: $showOnboardingModal) {
+                OnboardingView {
+                    showOnboardingModal = false
+                }
+            }
+            .alert("Xóa lịch sử", isPresented: $showClearHistoryAlert) {
+                Button("Hủy", role: .cancel) {}
+                Button("Xóa tất cả", role: .destructive) {
                     storageService.clearSearchHistory()
                 }
             } message: {
-                Text("Are you sure you want to clear your local search and playback history? This action cannot be undone.")
+                Text("Bạn có chắc chắn muốn xóa lịch sử tìm kiếm cục bộ không?")
             }
         }
         .task {
@@ -189,7 +271,7 @@ public struct SettingsView: View {
 
     private var privacyManifestView: some View {
         ZStack {
-            WaveMixColors.backgroundDark.ignoresSafeArea()
+            WaveMixColors.midnightBlack.ignoresSafeArea()
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 14) {
@@ -197,15 +279,15 @@ public struct SettingsView: View {
                         .font(.system(size: 18, weight: .bold))
                         .foregroundColor(WaveMixColors.textPrimary)
 
-                    Text("WaveMix respects your privacy and complies with Apple's Privacy Manifest policy for iOS 16 and later.")
+                    Text("WaveMix cam kết bảo vệ dữ liệu người dùng và tuân thủ tuyệt đối quy định bảo mật Apple Privacy Manifest.")
                         .font(.system(size: 13))
                         .foregroundColor(WaveMixColors.textSecondary)
 
                     VStack(alignment: .leading, spacing: 8) {
-                        Text("• Tracking Domains: None. WaveMix does not track users across third-party apps.")
-                        Text("• Required Reason APIs: NSPrivacyAccessedAPICategoryUserDefaults (app preferences), NSPrivacyAccessedAPICategoryFileTimestamp (local cache management).")
-                        Text("• Third-Party Data Collection: Music searches are executed directly against official provider APIs (YouTube Data API v3, Apple MusicKit) without intermediate ad-tracking proxies.")
-                        Text("• No YouTube Login Stored: WaveMix does not store or proxy Google/YouTube user credentials.")
+                        Text("• Tên miền theo dõi: Không có. WaveMix không theo dõi người dùng.")
+                        Text("• API khai báo lý do bắt buộc: UserDefaults (Lưu cài đặt), FileTimestamp (Quản lý cache cục bộ).")
+                        Text("• Tìm kiếm YouTube trực tiếp từ máy khách thông qua YouTube Data API v3 chính thức.")
+                        Text("• Không lưu trữ tài khoản hoặc mật khẩu YouTube của người dùng.")
                     }
                     .font(.system(size: 12))
                     .foregroundColor(WaveMixColors.textSecondary)
@@ -213,26 +295,26 @@ public struct SettingsView: View {
                 .padding(20)
             }
         }
-        .navigationTitle("Privacy Manifest")
+        .navigationTitle("Quyền riêng tư")
     }
 
     private func checkMusicKitStatus() async {
         let status = MusicAuthorization.currentStatus
         switch status {
         case .authorized:
-            musicKitStatusText = "Authorized & Active"
+            musicKitStatusText = "Đã ủy quyền"
             canRequestMusicKit = false
         case .denied:
-            musicKitStatusText = "Denied in System Settings"
+            musicKitStatusText = "Bị từ chối trong Cài đặt iOS"
             canRequestMusicKit = false
         case .notDetermined:
-            musicKitStatusText = "Not yet requested"
+            musicKitStatusText = "Chưa yêu cầu"
             canRequestMusicKit = true
         case .restricted:
-            musicKitStatusText = "Restricted by Parental Controls"
+            musicKitStatusText = "Bị hạn chế (Parental Controls)"
             canRequestMusicKit = false
         @unknown default:
-            musicKitStatusText = "Unknown Status"
+            musicKitStatusText = "Trạng thái không xác định"
             canRequestMusicKit = true
         }
     }
@@ -240,16 +322,16 @@ public struct SettingsView: View {
     private func updateMusicKitStatus(status: AppleMusicAccessStatus) {
         switch status {
         case .authorized(let canPlay):
-            musicKitStatusText = canPlay ? "Authorized (Full Catalog Subscription)" : "Authorized (Preview Mode)"
+            musicKitStatusText = canPlay ? "Đã ủy quyền (Gói nghe nhạc hợp lệ)" : "Đã ủy quyền (Chế độ Preview)"
             canRequestMusicKit = false
         case .denied:
-            musicKitStatusText = "Access Denied"
+            musicKitStatusText = "Bị từ chối"
             canRequestMusicKit = false
         case .restricted:
-            musicKitStatusText = "Access Restricted"
+            musicKitStatusText = "Bị hạn chế"
             canRequestMusicKit = false
         case .notDetermined:
-            musicKitStatusText = "Pending Request"
+            musicKitStatusText = "Đang chờ"
             canRequestMusicKit = true
         }
     }

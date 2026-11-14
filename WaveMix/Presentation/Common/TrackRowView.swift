@@ -66,7 +66,7 @@ public struct TrackRowView: View {
                         }
                     }
 
-                    ProviderBadgeView(provider: track.provider)
+                    ProviderBadgeView(provider: track.provider, isVietnameseChannel: track.isVietnameseChannel)
                 }
 
                 Spacer()

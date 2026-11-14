@@ -4,10 +4,12 @@ import SwiftUI
 public struct ProviderBadgeView: View {
     public let provider: MusicProvider
     public var showCapability: Bool = true
+    public var isVietnameseChannel: Bool = false
 
-    public init(provider: MusicProvider, showCapability: Bool = true) {
+    public init(provider: MusicProvider, showCapability: Bool = true, isVietnameseChannel: Bool = false) {
         self.provider = provider
         self.showCapability = showCapability
+        self.isVietnameseChannel = isVietnameseChannel
     }
 
     public var body: some View {
@@ -19,6 +21,21 @@ public struct ProviderBadgeView: View {
             Text(provider.displayName)
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundColor(.white)
+
+            if isVietnameseChannel {
+                HStack(spacing: 2) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 7))
+                        .foregroundColor(Color.yellow)
+                    Text("VN")
+                        .font(.system(size: 8, weight: .bold))
+                        .foregroundColor(Color.yellow)
+                }
+                .padding(.horizontal, 3)
+                .padding(.vertical, 1)
+                .background(Color.yellow.opacity(0.15))
+                .cornerRadius(3)
+            }
 
             if showCapability {
                 if provider.supportsBackgroundAudio {

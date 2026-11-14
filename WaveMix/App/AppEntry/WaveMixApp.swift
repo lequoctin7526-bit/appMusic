@@ -5,6 +5,9 @@ import SwiftUI
 struct WaveMixApp: App {
     @StateObject private var playbackService: UnifiedPlaybackService
     @AppStorage("wavemix_theme") private var isDarkMode: Bool = true
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+
+    @State private var isShowingSplash: Bool = true
 
     init() {
         let container = AppDependencyContainer.shared
@@ -23,9 +26,28 @@ struct WaveMixApp: App {
 
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .environmentObject(playbackService)
-                .preferredColorScheme(isDarkMode ? .dark : .light)
+            ZStack {
+                if isShowingSplash {
+                    SplashScreenView {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            isShowingSplash = false
+                        }
+                    }
+                    .transition(.opacity)
+                } else if !hasCompletedOnboarding {
+                    OnboardingView {
+                        withAnimation(.easeInOut(duration: 0.4)) {
+                            hasCompletedOnboarding = true
+                        }
+                    }
+                    .transition(.opacity)
+                } else {
+                    MainTabView()
+                        .environmentObject(playbackService)
+                        .transition(.opacity)
+                }
+            }
+            .preferredColorScheme(isDarkMode ? .dark : .light)
         }
     }
 }

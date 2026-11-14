@@ -1,35 +1,59 @@
 import SwiftUI
 
-/// WaveMix Premium Design System Color Palette
+/// WaveMix Premium Brand Identity & Design System Color Palette
+/// Tagline: "Feel Every Beat. Discover Every Song."
 public enum WaveMixColors {
-    // Backgrounds
-    public static let backgroundDark = Color(red: 0.04, green: 0.05, blue: 0.07) // Deep Obsidian #0A0D12
-    public static let surfaceDark = Color(red: 0.09, green: 0.11, blue: 0.16)    // Dark Slate #171C28
-    public static let surfaceElevated = Color(red: 0.13, green: 0.16, blue: 0.22) // Elevated Card #212938
+    // Official Brand Palette
+    public static let midnightBlack = Color(red: 11/255, green: 11/255, blue: 18/255)   // #0B0B12
+    public static let deepPurple = Color(red: 108/255, green: 66/255, blue: 217/255)     // #6C42D9
+    public static let electricBlue = Color(red: 49/255, green: 139/255, blue: 255/255)   // #318BFF
+    public static let neonCyan = Color(red: 66/255, green: 232/255, blue: 216/255)       // #42E8D8
+    public static let accentPink = Color(red: 214/255, green: 109/255, blue: 255/255)    // #D66DFF
+
+    // App Surfaces (Dark Luxury Theme)
+    public static let backgroundDark = midnightBlack
+    public static let surfaceDark = Color(red: 18/255, green: 18/255, blue: 28/255)      // #12121C
+    public static let surfaceElevated = Color(red: 26/255, green: 26/255, blue: 40/255)  // #1A1A28
     public static let surfaceBorder = Color(white: 1.0, opacity: 0.08)
 
-    // Accents & Gradients
-    public static let accentViolet = Color(red: 0.54, green: 0.17, blue: 0.89)  // Electric Violet #8A2BE2
-    public static let accentCyan = Color(red: 0.0, green: 0.82, blue: 1.0)       // Neon Cyan #00D2FF
-    public static let accentPink = Color(red: 0.98, green: 0.20, blue: 0.52)     // Vibrant Pink #FA3384
+    // Aliases for component compatibility
+    public static let accentViolet = deepPurple
+    public static let accentCyan = neonCyan
 
+    // Signature Gradients
     public static let brandGradient = LinearGradient(
-        colors: [accentViolet, accentCyan],
+        colors: [deepPurple, electricBlue, neonCyan],
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
 
+    public static let neonAccentGradient = LinearGradient(
+        colors: [electricBlue, neonCyan, accentPink],
+        startPoint: .leading,
+        endPoint: .trailing
+    )
+
     public static let playerGradient = LinearGradient(
-        colors: [Color(red: 0.12, green: 0.08, blue: 0.24), backgroundDark],
+        colors: [Color(red: 30/255, green: 18/255, blue: 60/255), midnightBlack],
         startPoint: .top,
         endPoint: .bottom
     )
 
+    public static let splashGlowGradient = RadialGradient(
+        gradient: Gradient(colors: [deepPurple.opacity(0.6), electricBlue.opacity(0.3), Color.clear]),
+        center: .center,
+        startRadius: 20,
+        endRadius: 220
+    )
+
     // Text & Controls
     public static let textPrimary = Color.white
-    public static let textSecondary = Color(white: 0.65)
-    public static let textTertiary = Color(white: 0.40)
+    public static let textSecondary = Color(white: 0.70)
+    public static let textTertiary = Color(white: 0.45)
     public static let divider = Color(white: 1.0, opacity: 0.06)
+
+    // Brand Tagline
+    public static let brandTagline = "Feel Every Beat. Discover Every Song."
 }
 
 extension View {
