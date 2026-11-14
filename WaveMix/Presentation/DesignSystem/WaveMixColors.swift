@@ -26,6 +26,7 @@ public enum WaveMixColors {
         startPoint: .topLeading,
         endPoint: .bottomTrailing
     )
+    public static let primaryGradient = brandGradient
 
     public static let neonAccentGradient = LinearGradient(
         colors: [electricBlue, neonCyan, accentPink],
@@ -54,6 +55,7 @@ public enum WaveMixColors {
 
     // Brand Tagline
     public static let brandTagline = "Feel Every Beat. Discover Every Song."
+    public static let tagline = brandTagline
 }
 
 extension View {
